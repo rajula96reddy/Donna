@@ -9,8 +9,13 @@ def init():
 	try:
 		os.mkdir('commit/')
 		os.mkdir('stage/')
+		os.mkdir('versions/')
 		file_path_commit = os.path.join(os.getcwd(),'commit')
 		log = os.path.join(file_path_commit,'commit_log.txt')
+		target = open(log,'w')
+		target.close()
+		file_path_commit = os.path.join(os.getcwd(),'versions')
+		log = os.path.join(file_path_commit,'version_log.txt')
 		target = open(log,'w')
 		target.close()
 
@@ -42,12 +47,30 @@ def stage():
 def commit():
 	"commit files from the stage into a new folder commit"
 	try:
-		file_path = os.path.join(os.getcwd(),'stage')
+		version_file_path = os.path.join(os.getcwd(),'versions/version_log.txt')
+		
+		with open(version_file_path) as f:
+			lines = f.readlines()
+		if(len(lines)==0):
+			present_version = 1
+		else:
+			current_version = int(lines[-1][0])
+			present_version = current_version + 1
+		version_path = os.getcwd()+'/versions/v_'+str(present_version)
+		os.mkdir(version_path)
+		f = open(version_file_path,'a')
+		f.write(str(present_version)+" ")
+		f.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
+		f.write("\n")
+		f.close()
+		stage_path = os.path.join(os.getcwd(),'stage')
+		commit_path = os.path.join(os.getcwd(),'commit')
 		# print file_path
-		files = os.listdir(file_path)
+		files = os.listdir(stage_path)
 		print files
 		for each_file in files:
-			shutil.copy(each_file, os.path.join(os.getcwd(),'commit'))
+			shutil.copy(each_file, commit_path)
+			shutil.copy(each_file, version_path)
 		    #  	else:
 		    #  		print "no"+ full_name
 		file_path_commit = os.path.join(os.getcwd(),'commit')
@@ -57,6 +80,7 @@ def commit():
 		target.write(sys.argv[1])
 		target.write("\n")
 		target.close()
+
 
 	except OSError as e:
 	   	print e
