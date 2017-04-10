@@ -18,6 +18,6 @@ Simple Version Control like Git
 # For more fun execution:
 **Type the following in the terminal:**<br>
 *alias donna = "python main.py"*<br>
-Now, when executing above features, replace "python main.py" with "donna"(Ex: *python main.py init* -> *donna init*)
+Now, when executing above features, replace "python main.py" with "donna"(Ex: *python main.py init* -> *donna init*)<br>
 **Note:**<br>
 This fun execution is valid for one terminal session and will disapear after closing the terminal(due to the limitations of "alias" command). So, every new terminal session, please repeat the same instructions again for fun execution.
