@@ -7,7 +7,7 @@ Simple Version Control like Git
 *python main.py init*<br>
 2.stage(Serves the same functionality like 'Git stage')<br>
 **Usage:**<br>
-*python main.py stage (list of files)*<br>
+*python main.py stage (filenames with space between each filename)*<br>
 3.commit(Serves the same functionality like 'Git commit')<br>
 **Usage:**<br>
 *python main.py commit (commit message in double quotes)*<br>
