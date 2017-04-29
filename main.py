@@ -9,6 +9,7 @@ import re
 import difflib
 import ntpath
 import webbrowser
+import ast
 
 @click.group()
 def donna():
@@ -32,43 +33,24 @@ def init(**kwargs):
 	except OSError as e:
 		print e
 		print "Error"
-
-def copytree(src, dst, symlinks=False, ignore=None):
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-    for item in os.listdir(src):
-        s = os.path.join(src, item)
-        d = os.path.join(dst, item)
-        if os.path.isdir(s):
-			if not item.startswith('.') and (item != 'stage'):
-				copytree(s, d, symlinks, ignore)
-        else:
-            # if not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
-            shutil.copy2(s, d)
-
+	
 @donna.command()
 @click.argument('files', nargs=-1)
 def stage(files):
 	"moves files added to the stage into a new folder stage"
 	try:
-		if(files[0]=="."):
-			# print "here"
-			# print len(files)
-			files = os.listdir(os.getcwd())
-
 		for file in files:
-
+        	
 			full_name = os.path.join(os.getcwd(),file)
 			print file
 			print full_name
 			# print os.path.isfile(full_name)
-	    	copytree(os.getcwd(), os.path.join(os.getcwd(),'stage'))
-	    	# if (os.path.isfile(full_name)):
-		    # 	print "yes" + full_name
-     	# 		shutil.copy(full_name, os.path.join(os.getcwd(),'stage',file))
-     	# 	else:
-		    # 	print "no"+ full_name
-				
+	    	
+		    	if (os.path.isfile(full_name)):
+		     		print "yes" + full_name
+     				shutil.copy(full_name, os.path.join(os.getcwd(),'stage',file))
+		     	else:
+		     		print "no"+ full_name
 	except OSError as e:
 	   	print e
 
@@ -166,63 +148,15 @@ def display(log):
 	else:
 		print "Please enter valid option!"
 
+
 @donna.command()
 @click.argument('folder1')
 @click.argument('folder2')	
 def diff(**kwargs):
     dir1 = kwargs['folder1']
     dir2 = kwargs['folder2']
-    in_dir1, in_dir2 ,in_dir3,in_dir4= compare_directories(dir1, dir2)
-    f = open("1.html",'w')
-    for relative_path in in_dir1:
-        for relative_path2 in in_dir2:
-            fn1 = open(os.path.join(os.path.dirname(__file__), dir1, relative_path))
-            fn2 = open(os.path.join(os.path.dirname(__file__), dir2, relative_path2))
-            fname1 = path_leaf(relative_path)
-            fname2 = path_leaf(relative_path2)
-            if(fname1 == fname2):
-                fn1.flush()
-                data1 = fn1.read()
-                fn1.flush()
-                data2 = fn2.read()
-                data1 = data1.splitlines()
-                data2 = data2.splitlines()
-                d = difflib.HtmlDiff()
-                diff = difflib.unified_diff(data1,data2, lineterm='')
-                data3 = '\n'.join(list(diff))
-
-                print >> f, d.make_file(data1,data2)
-    print "Files present Only in Folder1"
-    for relative_path in in_dir3:
-        fn1 = open(os.path.join(os.path.dirname(__file__), dir1, relative_path))
-        fn1.flush()
-        fname1 = path_leaf(relative_path)
-        print fname1
-        data1 = fn1.read()
-        fn1.flush()
-        data2 = ""
-        data1 = data1.splitlines()
-        d = difflib.HtmlDiff()
-        diff = difflib.unified_diff(data1,data2, lineterm='')
-        data3 = '\n'.join(list(diff))
-        print >> f, d.make_file(data1,data2)
+    compare_files(dir1, dir2)
     
-    print "Files present Only in Folder2"
-    for relative_path in in_dir4:
-        fn2 = open(os.path.join(os.path.dirname(__file__), dir2, relative_path))
-        fn2.flush()
-        fname2 = path_leaf(relative_path)
-        print fname2
-
-        data2 = fn2.read()
-        data1 = ""
-        data2 = data2.splitlines()
-        d = difflib.HtmlDiff()
-        diff = difflib.unified_diff(data1,data2, lineterm='')
-        data3 = '\n'.join(list(diff))
-        print >> f, d.make_file(data1,data2)        
-    f.close()
-    webbrowser.open('file://' + os.path.realpath('1.html'))
 def disC():
 	version_file_path = os.path.join(os.getcwd(),'commit/commit_log.p')
 	f=open(version_file_path,'rb')
@@ -262,5 +196,146 @@ def compare_directories(dir1, dir2):
     files_set1 = build_files_set(dir1)
     files_set2 = build_files_set(dir2)
     return (files_set1, files_set2, files_set1-files_set2, files_set2-files_set1)
+
+def compare_files(direc1,direc2):
+    in_dir1, in_dir2 ,in_dir3,in_dir4= compare_directories(direc1, direc2)
+    f = open("1.html",'w')
+    lst = []
+    files_added = []
+    files_removed = []
+    # print "Files present in only Folder1:"
+    for relative_path in in_dir1:
+        flag=0
+        for relative_path2 in in_dir2:
+            p1 =  os.getcwd() + '/' + direc1  + '/' + relative_path
+            p2 =  os.getcwd() + '/' + direc2  + '/' + relative_path2
+            # print p1
+            if(os.path.isfile(p1) and  os.path.isfile(p2)):
+                fn1 = open(os.path.join(os.path.dirname(__file__), direc1, relative_path))
+                fn2 = open(os.path.join(os.path.dirname(__file__), direc2, relative_path2))
+                fname1 = path_leaf(relative_path)
+                fname2 = path_leaf(relative_path2)
+                if(fname1 == fname2):
+                    lst.append(fname2)
+                    fn1.flush()
+                    flag=1
+                    data1 = fn1.read()
+                    fn1.flush()
+                    data2 = fn2.read()
+                    data1 = data1.splitlines()
+                    data2 = data2.splitlines()
+                    d = difflib.HtmlDiff()
+                    diff = difflib.unified_diff(data1,data2, lineterm='')
+                    data3 = '\n'.join(list(diff))
+                    # list1=list2=list3=list4=[]
+                    list1 = Number_of_Functions(p1)
+                    list2 = Number_of_Functions(p2)
+                    list3,list4 = diff_functions(list1,list2)
+                    # print p1
+                    # print p2
+                    # print dir1,dir2
+                    # print dir1 +'/'+fname1
+                    # print list1,list2
+                    # print list3,list4
+                    if(len(list4)>0):
+	           			print "Functions removed in " + fname1
+	           			# print list4
+	           			for i in list4:
+	           				print '- '+ i
+					if(len(list3) > 0):
+						print "Functions added in " + fname1
+						for i in list3:
+							print '+ ' + i                    
+                    print >> f, d.make_file(data1,data2)
+        p1 =  os.getcwd() + '/' + direc1  + '/' + relative_path
+        if(os.path.isfile(p1) and flag != 1):
+            fn1 = open(os.path.join(os.path.dirname(__file__), direc1, relative_path))
+            fn1.flush()
+            fname1 = path_leaf(relative_path)
+            # print fname1
+            files_removed.append(fname1)
+            data1 = fn1.read()
+            fn1.flush()
+            data2 = ""
+            data1 = data1.splitlines()
+            d = difflib.HtmlDiff()
+            diff = difflib.unified_diff(data1,data2, lineterm='')
+            data3 = '\n'.join(list(diff))
+            print >> f, d.make_file(data1,data2)
+            fn1.close()
+
+    
+    # print "Files present Only in Folder2"
+    for relative_path in in_dir4:
+        p2 =  os.getcwd() + '/' + direc2 + '/' + relative_path
+        flag=0
+        if(os.path.isfile(p2)):
+            fn2 = open(os.path.join(os.path.dirname(__file__), direc2, relative_path))
+            fn2.flush()
+            fname2 = path_leaf(relative_path)
+            for i in lst:
+                if(i == fname2):
+                    flag=1
+            if(flag==0):
+                # print fname2
+                files_added.append(fname2)
+                data2 = fn2.read()
+                data1 = ""
+                data2 = data2.splitlines()
+                d = difflib.HtmlDiff()
+                diff = difflib.unified_diff(data1,data2, lineterm='')
+                data3 = '\n'.join(list(diff))
+                print >> f, d.make_file(data1,data2)
+                fn2.close()
+    f.close()
+    # webbrowser.open('file://' + os.path.realpath('1.html'))
+    if(len(files_added)>0):
+    	print "Files Added"
+    	for i in files_added:
+    		print '+ ' + i
+    if (len(files_removed)>0):
+    	print "Files Removed"
+    	for i in files_removed:
+			print '- ' + i
+def diff_functions(list1, list2):
+    list_deletions = []
+    list_additions = []
+    for i in list1:
+        if i not in list2:
+            list_deletions.append(i)
+    for i in list2:
+        if i not in list1:
+            list_additions.append(i)
+    return list_additions,list_deletions
+
+def Number_of_Functions(file1):
+    array= []
+    functions = []
+    i = 0
+    with open(file1, "r") as ins:
+        for line in ins:
+            if(len(line)>1 and ((line[0]==line[1]==" " or line[0]=='\t') or (line[0]=='\n' ))):
+                array[i-1] = array[i-1] + line
+                # print line
+            else:
+                # print line
+                array.append(line)
+                i = i+1
+    # print len(array)
+    # pprint(array)
+    k=0
+    for j in array:
+        # j = raw_string(j)
+        try:
+            tree1 = ast.parse(j)
+            for i in ast.walk(tree1):
+                if isinstance(i,ast.FunctionDef):
+                    # print (i.name)
+                    functions.append(i.name)
+        except:
+            k = k+1
+    # print len(functions)
+    return functions 
+
 if __name__ == '__main__':
     donna()
