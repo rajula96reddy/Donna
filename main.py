@@ -288,7 +288,7 @@ def compare_files(direc1,direc2):
                 print >> f, d.make_file(data1,data2)
                 fn2.close()
     f.close()
-    # webbrowser.open('file://' + os.path.realpath('1.html'))
+    webbrowser.open('file://' + os.path.realpath('1.html'))
     if(len(files_added)>0):
     	print "Files Added"
     	for i in files_added:
