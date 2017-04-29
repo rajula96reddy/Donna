@@ -4,6 +4,7 @@ import difflib
 import ntpath
 import webbrowser
 import argparse
+import ast
 
 def build_files_set(rootdir):
     root_to_subtract = re.compile(r'^.*?' + rootdir + r'[\\/]{0,1}')
@@ -24,6 +25,35 @@ def compare_directories(dir1, dir2):
     files_set1 = build_files_set(dir1)
     files_set2 = build_files_set(dir2)
     return (files_set1, files_set2, files_set1-files_set2, files_set2-files_set1)
+
+def Number_of_Functions(file1):
+    array= []
+    functions = []
+    i = 0
+    with open(file1, "r") as ins:
+        for line in ins:
+            if(len(line)>1 and (line[0]==line[1]==" " or line[0]=='\t') or (line[0]=='\n' )):
+                array[i-1] = array[i-1] + line
+                # print line
+            else:
+                # print line
+                array.append(line)
+                i = i+1
+    # print len(array)
+    # pprint(array)
+    k=0
+    for j in array:
+        # j = raw_string(j)
+        try:
+            tree1 = ast.parse(j)
+            for i in ast.walk(tree1):
+                if isinstance(i,ast.FunctionDef):
+                    print (i.name)
+                    functions.append(i.name)
+        except:
+            k = k+1
+    # print len(functions)
+    return functions 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
