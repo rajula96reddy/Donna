@@ -32,24 +32,43 @@ def init(**kwargs):
 	except OSError as e:
 		print e
 		print "Error"
-	
+
+def copytree(src, dst, symlinks=False, ignore=None):
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+			if not item.startswith('.') and (item != 'stage'):
+				copytree(s, d, symlinks, ignore)
+        else:
+            # if not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
+            shutil.copy2(s, d)
+
 @donna.command()
 @click.argument('files', nargs=-1)
 def stage(files):
 	"moves files added to the stage into a new folder stage"
 	try:
+		if(files[0]=="."):
+			# print "here"
+			# print len(files)
+			files = os.listdir(os.getcwd())
+
 		for file in files:
-        	
+
 			full_name = os.path.join(os.getcwd(),file)
 			print file
 			print full_name
 			# print os.path.isfile(full_name)
-	    	
-		    	if (os.path.isfile(full_name)):
-		     		print "yes" + full_name
-     				shutil.copy(full_name, os.path.join(os.getcwd(),'stage',file))
-		     	else:
-		     		print "no"+ full_name
+	    	copytree(os.getcwd(), os.path.join(os.getcwd(),'stage'))
+	    	# if (os.path.isfile(full_name)):
+		    # 	print "yes" + full_name
+     	# 		shutil.copy(full_name, os.path.join(os.getcwd(),'stage',file))
+     	# 	else:
+		    # 	print "no"+ full_name
+				
 	except OSError as e:
 	   	print e
 
