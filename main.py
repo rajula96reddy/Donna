@@ -10,6 +10,7 @@ import difflib
 import ntpath
 import webbrowser
 import ast
+import dropbox
 
 @click.group()
 def donna():
@@ -39,6 +40,10 @@ def init(**kwargs):
 def stage(files):
 	"moves files added to the stage into a new folder stage"
 	try:
+		if(files[0]=="."):
+			# print "here"
+			# print len(files)
+			files = os.listdir(os.getcwd())		
 		for file in files:
         	
 			full_name = os.path.join(os.getcwd(),file)
@@ -157,6 +162,19 @@ def diff(**kwargs):
     dir2 = kwargs['folder2']
     compare_files(dir1, dir2)
     
+@donna.command()
+@click.argument('file')
+def online(**kwargs):
+	#Uploads a file to Dropbox
+    fileName = kwargs['file']
+    access_token = 'd8tbHl4zVzAAAAAAAAAAHLK5v2VX266FV-pH3uV8WUQtJrdc6-9FwyEpjwy63k1m'
+    client = dropbox.client.DropboxClient(access_token)
+    print "Linked account: ", client.account_info()
+    f = open(fileName, 'rb')
+    response = client.put_file(fileName, f)
+    print "Uploaded: ", response
+
+
 def disC():
 	version_file_path = os.path.join(os.getcwd(),'commit/commit_log.p')
 	f=open(version_file_path,'rb')
@@ -235,17 +253,28 @@ def compare_files(direc1,direc2):
                     # print p2
                     # print dir1,dir2
                     # print dir1 +'/'+fname1
-                    # print list1,list2
+                    print "Functions in " + direc1 
+                    print list1
+                    print "Functions in " + direc2
+                    print list2
                     # print list3,list4
-                    if(len(list4)>0):
-	           			print "Functions removed in " + fname1
-	           			# print list4
-	           			for i in list4:
-	           				print '- '+ i
-					if(len(list3) > 0):
-						print "Functions added in " + fname1
-						for i in list3:
-							print '+ ' + i                    
+                    if(len(list3)>0):
+                    	print "Functions added in " + fname1
+                    	for i in list3:
+                    		print '+ ' + i
+                   	if(len(list4)>0):
+                   		print "Functions removed in " + fname1
+                   		for i in list4:
+                   			print '- ' + i
+               #      print len(list3)
+               #      if(1):
+	           			# print "Functions removed in " + fname1
+	           			# for i in list4:
+	           			# 	print '- '+ i
+					# if(1):
+					# 	print "Functions added in " + fname1
+					# 	for i in list3:
+					# 		print '+ ' + i                    
                     print >> f, d.make_file(data1,data2)
         p1 =  os.getcwd() + '/' + direc1  + '/' + relative_path
         if(os.path.isfile(p1) and flag != 1):
@@ -307,6 +336,7 @@ def diff_functions(list1, list2):
         if i not in list1:
             list_additions.append(i)
     return list_additions,list_deletions
+
 
 def Number_of_Functions(file1):
     array= []
