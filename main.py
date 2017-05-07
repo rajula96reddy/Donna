@@ -114,8 +114,13 @@ def commit(**kwargs):
 		for each_file in files:
 			shutil.copy(each_file, commit_path)
 			shutil.copy(each_file, version_path)
+			file_path = str(stage_path + '/' + str(each_file))
+			print file_path
+			os.remove(file_path)
 		file_path_commit = os.path.join(os.getcwd(),'commit')
 		log = os.path.join(file_path_commit,'commit_log.p')
+		# os.remove(each_file)
+		# for each_file in files:
 		luck=0
 		target = open(log,"r+b")
 		ndict3={}
