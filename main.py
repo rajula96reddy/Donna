@@ -12,13 +12,14 @@ import webbrowser
 import ast
 import dropbox
 
+#Using click library thorugh the placeholder "donna" to capture command line arguments
 @click.group()
 def donna():
     pass
 
+#Function supporting "init" functionality
 @donna.command()
 def init(**kwargs):
-	"creates two folders one for staging and one for committing"
 	try:
 		os.mkdir('commit/')
 		os.mkdir('stage/')
@@ -35,22 +36,18 @@ def init(**kwargs):
 		print e
 		print "Error"
 	
+#Function supporting "stage" functionality
 @donna.command()
 @click.argument('files', nargs=-1)
 def stage(files):
 	"moves files added to the stage into a new folder stage"
 	try:
 		if(files[0]=="."):
-			# print "here"
-			# print len(files)
 			files = os.listdir(os.getcwd())		
 		for file in files:
-        	
 			full_name = os.path.join(os.getcwd(),file)
 			print file
 			print full_name
-			# print os.path.isfile(full_name)
-	    	
 		    	if (os.path.isfile(full_name)):
 		     		print "yes" + full_name
      				shutil.copy(full_name, os.path.join(os.getcwd(),'stage',file))
@@ -59,6 +56,7 @@ def stage(files):
 	except OSError as e:
 	   	print e
 
+#Function supporting "commit" functionality
 @donna.command()
 @click.argument('msg')
 def commit(**kwargs):
@@ -119,8 +117,6 @@ def commit(**kwargs):
 			os.remove(file_path)
 		file_path_commit = os.path.join(os.getcwd(),'commit')
 		log = os.path.join(file_path_commit,'commit_log.p')
-		# os.remove(each_file)
-		# for each_file in files:
 		luck=0
 		target = open(log,"r+b")
 		ndict3={}
@@ -145,6 +141,7 @@ def commit(**kwargs):
 	except OSError as e:
 	   	print e
 
+#Function to display the commit log data and version log data on terminal
 @donna.command()
 @click.option('--log', prompt='To display commit log enter cl; To display version log enter vl; To display both enter vc', help='The log to display.')
 def display(log):
@@ -158,7 +155,7 @@ def display(log):
 	else:
 		print "Please enter valid option!"
 
-
+#Function to support "diff" functionality
 @donna.command()
 @click.argument('folder1')
 @click.argument('folder2')	
@@ -167,6 +164,7 @@ def diff(**kwargs):
     dir2 = kwargs['folder2']
     compare_files(dir1, dir2)
     
+#Function to store any file online on Dropbox through Dropbox API
 @donna.command()
 @click.argument('file')
 def online(**kwargs):
@@ -179,7 +177,7 @@ def online(**kwargs):
     response = client.put_file(fileName, f)
     print "Uploaded: ", response
 
-
+#Function to get commit log data from pickle file and display on terminal
 def disC():
 	version_file_path = os.path.join(os.getcwd(),'commit/commit_log.p')
 	f=open(version_file_path,'rb')
@@ -191,6 +189,8 @@ def disC():
 	except EOFError as e:
 			print ""
 	f.close()
+
+#Function to get version log data from pickle file and display on terminal
 def disV():
 	version_file_path = os.path.join(os.getcwd(),'versions/version_log.p')
 	f=open(version_file_path,'rb')
@@ -202,6 +202,8 @@ def disV():
 	except EOFError as e:
 			print ""
 	f.close()
+
+#Functions to get paths of all files present in a folder
 def build_files_set(rootdir):
 	    root_to_subtract = re.compile(r'^.*?' + rootdir + r'[\\/]{0,1}')
 	    files_set = set()
@@ -211,28 +213,30 @@ def build_files_set(rootdir):
 	            relative_path = root_to_subtract.sub('', full_path, count=1)
 	            files_set.add(relative_path)
 	    return files_set
+
+#Function to get file name from its path given 
 def path_leaf(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
 
+#Function that gets the relative paths of all files present in two directories using the above "build_files_set" function 
 def compare_directories(dir1, dir2):
     files_set1 = build_files_set(dir1)
     files_set2 = build_files_set(dir2)
     return (files_set1, files_set2, files_set1-files_set2, files_set2-files_set1)
 
+#Function that contains the underlying logic for the "diff" functionality
 def compare_files(direc1,direc2):
     in_dir1, in_dir2 ,in_dir3,in_dir4= compare_directories(direc1, direc2)
     f = open("1.html",'w')
     lst = []
     files_added = []
     files_removed = []
-    # print "Files present in only Folder1:"
     for relative_path in in_dir1:
         flag=0
         for relative_path2 in in_dir2:
             p1 =  os.getcwd() + '/' + direc1  + '/' + relative_path
             p2 =  os.getcwd() + '/' + direc2  + '/' + relative_path2
-            # print p1
             if(os.path.isfile(p1) and  os.path.isfile(p2)):
                 fn1 = open(os.path.join(os.path.dirname(__file__), direc1, relative_path))
                 fn2 = open(os.path.join(os.path.dirname(__file__), direc2, relative_path2))
@@ -250,19 +254,13 @@ def compare_files(direc1,direc2):
                     d = difflib.HtmlDiff()
                     diff = difflib.unified_diff(data1,data2, lineterm='')
                     data3 = '\n'.join(list(diff))
-                    # list1=list2=list3=list4=[]
                     list1 = Number_of_Functions(p1)
                     list2 = Number_of_Functions(p2)
                     list3,list4 = diff_functions(list1,list2)
-                    # print p1
-                    # print p2
-                    # print dir1,dir2
-                    # print dir1 +'/'+fname1
                     print "Functions in " + direc1 
                     print list1
                     print "Functions in " + direc2
                     print list2
-                    # print list3,list4
                     if(len(list3)>0):
                     	print "Functions added in " + fname1
                     	for i in list3:
@@ -270,23 +268,13 @@ def compare_files(direc1,direc2):
                    	if(len(list4)>0):
                    		print "Functions removed in " + fname1
                    		for i in list4:
-                   			print '- ' + i
-               #      print len(list3)
-               #      if(1):
-	           			# print "Functions removed in " + fname1
-	           			# for i in list4:
-	           			# 	print '- '+ i
-					# if(1):
-					# 	print "Functions added in " + fname1
-					# 	for i in list3:
-					# 		print '+ ' + i                    
+                   			print '- ' + i                 
                     print >> f, d.make_file(data1,data2)
         p1 =  os.getcwd() + '/' + direc1  + '/' + relative_path
         if(os.path.isfile(p1) and flag != 1):
             fn1 = open(os.path.join(os.path.dirname(__file__), direc1, relative_path))
             fn1.flush()
             fname1 = path_leaf(relative_path)
-            # print fname1
             files_removed.append(fname1)
             data1 = fn1.read()
             fn1.flush()
@@ -298,8 +286,6 @@ def compare_files(direc1,direc2):
             print >> f, d.make_file(data1,data2)
             fn1.close()
 
-    
-    # print "Files present Only in Folder2"
     for relative_path in in_dir4:
         p2 =  os.getcwd() + '/' + direc2 + '/' + relative_path
         flag=0
@@ -311,7 +297,6 @@ def compare_files(direc1,direc2):
                 if(i == fname2):
                     flag=1
             if(flag==0):
-                # print fname2
                 files_added.append(fname2)
                 data2 = fn2.read()
                 data1 = ""
@@ -331,6 +316,8 @@ def compare_files(direc1,direc2):
     	print "Files Removed"
     	for i in files_removed:
 			print '- ' + i
+
+#Function to get list functiona in a code file			
 def diff_functions(list1, list2):
     list_deletions = []
     list_additions = []
@@ -342,7 +329,7 @@ def diff_functions(list1, list2):
             list_additions.append(i)
     return list_additions,list_deletions
 
-
+#Function to parse code and get the functions present in it.
 def Number_of_Functions(file1):
     array= []
     functions = []
@@ -351,16 +338,11 @@ def Number_of_Functions(file1):
         for line in ins:
             if(len(line)>1 and ((line[0]==line[1]==" " or line[0]=='\t') or (line[0]=='\n' ))):
                 array[i-1] = array[i-1] + line
-                # print line
             else:
-                # print line
                 array.append(line)
                 i = i+1
-    # print len(array)
-    # pprint(array)
     k=0
     for j in array:
-        # j = raw_string(j)
         try:
             tree1 = ast.parse(j)
             for i in ast.walk(tree1):
@@ -369,7 +351,6 @@ def Number_of_Functions(file1):
                     functions.append(i.name)
         except:
             k = k+1
-    # print len(functions)
     return functions 
 
 if __name__ == '__main__':
