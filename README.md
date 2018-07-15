@@ -21,3 +21,8 @@ Simple Version Control like Git
 Now, when executing above features, replace "python main.py" with "donna"(Ex: *python main.py init* -> *donna init*)<br>
 **Note:**<br>
 This fun execution is valid for one terminal session and will disapear after closing the terminal(due to the limitations of "alias" command). So, for every new terminal session, please repeat the same instructions again for fun execution.
+
+# Contributors
+- [Pericherla Seetarama Raju (IMT2014038)](http://github.com/geekryptr)
+- [Duvvuru Nitish (IMT2014016)](https://github.com/nithish96)
+- [Rajula Vineet Reddy (IMT2014045)](https://github.com/rajula96reddy)
